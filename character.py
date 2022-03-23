@@ -7,7 +7,7 @@ class Hero:
 		self.Age = Age
 		self.Gender = Gender
 		self.Proffession = Proffession
-		self.Level = 0
+		self.Level = 1
 		self.Experience = 0
 		self.Health = Health
 		self.Attack = Attack
@@ -16,7 +16,7 @@ class Hero:
 		self.Intelligence = Intelligence
 
 	def ShowStatus(self):
-		print(f'Name:{self.Name}\nAge:{self.Age}\nGender:{self.Gender}\nLevel:{self.Level}\nExperience:{self.Experience}\nHealth:{self.Health}\nAttack:{self.Attack}\nAgility:{self.Agility}\nDefence:{self.Defense}\nInteligence:{self.Intelligence}\n')
+		print(f'Name:{self.Name}\nAge:{self.Age}\nGender:{self.Gender}\nLevel:{self.Level}\nExperience:{self.Experience}\nHealth:{self.Health}\nAttack:{self.Attack}\nAgility:{self.Agility}\nDefence:{self.Defense}\nInteligence:{self.Intelligence}')
 
 	def LevelUp(self):
 		while self.Experience >= Hero.ExpLimit:
@@ -53,7 +53,7 @@ class Monster():
 		self.Defense = Defense
 
 	def ShowStatus(self):
-		print(f'Type:{self.Type}\nLevel:{self.Level}\nHealth:{self.Health}\nAttack:{self.Attack}\nAgility:{self.Agility}\nDefence:{self.Defense}\n')
+		print(f'Type:{self.Type}\nLevel:{self.Level}\nHealth:{self.Health}\nAttack:{self.Attack}\nAgility:{self.Agility}\nDefence:{self.Defense}')
 
 	def ShowDescription(self):
 		print(self.Description)
@@ -61,22 +61,14 @@ class Monster():
 
 
 
-
-
-
-
 Levon = Hero('Levon', 18, 'male', 0, 0, 0, 0, 0, 0 , 0, 0)
-
 Levon.ShowStatus()
-
+print("")
 Levon.AttributeIncrease(10, 10, 10, 10, 5, 40)
-
-
+print("")
 Levon.ShowStatus()
-
+print("")
 
 Orc = Monster('Orc', 'Human like being with big body and green skin',30, 100, 30, 10, 25)
-
 Orc.ShowStatus()
-
 Orc.ShowDescription()

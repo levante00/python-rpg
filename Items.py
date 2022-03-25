@@ -42,7 +42,7 @@ class Weapon(Item):
 		print(self.Description)
 
 
-"""
+'''
 Table = Item('Table', 'Oak Table, looks like it was destroyed by some creature')
 Table.ShowDescription()
 print("")
@@ -55,5 +55,5 @@ print("")
 knife = Weapon('Knife', 'Regular kitchen knife', 'None', 1, 10, 15, 0)
 knife.ShowStatus()
 knife.ShowDescription()
-print("")"""
-
+print("")
+'''

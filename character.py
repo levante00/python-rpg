@@ -1,13 +1,14 @@
 import random
 import sys
-from Items import Weapon
-from Items import Armor
-
+from Items import *
+from colorama import Fore, Back, Style
+from Room import *
+from Enemy import Monster
 class Hero:
 	
 	ExpLimit = 10
 
-	def __init__(self, Name: str, Age: int, Gender: str, Profession: str, Health: int, Attack: int, Agility: int, Defense: int, Intelligence: int, Weapon: Weapon, Armor: Armor, Level: int = 1, Experience: int = 0, PositionX: int = 0, PositionY: int = 0):
+	def __init__(self, Name: str, Age: int, Gender: str, Profession: str, Health: int, Attack: int, Agility: int, Defense: int, Intelligence: int, Weapon: Weapon, Armor: Armor, CurrentRoom: Room, Level: int = 1, Experience: int = 0, PositionX: int = 0, PositionY: int = 0):
 		self.Name = Name
 		self.Age = Age
 		self.Gender = Gender
@@ -16,6 +17,7 @@ class Hero:
 		self.Experience = Experience 
 		self.PositionX = PositionX
 		self.PositionY = PositionY
+		self.CurrentRoom = CurrentRoom
 		self.Weapon = Weapon
 		self.Armor = Armor
 		self.Health = Health
@@ -25,7 +27,10 @@ class Hero:
 		self.Intelligence = Intelligence
 
 	def ShowStatus(self):
-		print(f'Name:{self.Name}\nAge:{self.Age}\nGender:{self.Gender}\nProfession:{self.Profession}\nLevel:{self.Level}\nExperience:{self.Experience}\nPosition:{(self.PositionX, self.PositionY)}\nWeapon:{self.Weapon.Name}\nArmor:{self.Armor.Name}\nHealth:{self.Health}\nAttack:{self.Attack}\nAgility:{self.Agility}\nDefence:{self.Defense}\nInteligence:{self.Intelligence}')
+		print(f'Name: {self.Name}\nAge: {self.Age}\nGender: {self.Gender}\nProfession: {self.Profession}\nLevel: {self.Level}\nExperience: {self.Experience}\nRoom: {self.CurrentRoom.Name}\nPosition: {(self.PositionX, self.PositionY)}\nWeapon: {self.Weapon.Name}\nArmor: {self.Armor.Name}\nHealth: {self.Health}\nAttack: {self.Attack}\nAgility: {self.Agility}\nDefence: {self.Defense}\nInteligence: {self.Intelligence}')
+
+	def ShowCurrentRoom(self):
+		self.CurrentRoom.ShowDescription()
 
 	def LevelUp(self):
 		while self.Experience >= Hero.ExpLimit:
@@ -112,85 +117,90 @@ class Hero:
 			else:
 				print(f'You do not have Required Profession: {Armor.ProfessionRequired}')
 	
-	def Move(self, direction: str):
+	def Move(self, direction, Map):
 		if direction == 'N':
 			self.PositionY += 1
+			if (self.PositionX % 5 == 0 and self.PositionY % 5 == 0) and (self.PositionX + self.PositionY) % 2 != 0:
+				for Room in Map:
+					if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY - 1: 
+						self.CurrentRoom = Room
 		elif direction == 'S':
 			self.PositionY -= 1
+			if (self.PositionX % 5 == 0 and self.PositionY % 5 == 0) and (self.PositionX + self.PositionY) % 2 != 0:
+				for Room in Map:
+					if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY + 1: 
+						self.CurrentRoom = Room
 		elif direction == 'E':
 			self.PositionX += 1
+			if (self.PositionX % 5 == 0 and self.PositionY % 5 == 0) and (self.PositionX + self.PositionY) % 2 != 0:
+				for Room in Map:
+					if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX - 1 and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY: 
+						self.CurrentRoom = Room
 		elif direction == 'W':
-			self.PositionY -= 1
+			self.PositionX -= 1
+			if (self.PositionX % 5 == 0 and self.PositionY % 5 == 0) and (self.PositionX + self.PositionY) % 2 != 0:
+				for Room in Map:
+					if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX + 1 and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY: 
+						self.CurrentRoom = Room
+		else:
+			print("Wrong input, choose from (N)orth, (S)outh, (E)ast, (W)est")
+		
+
+	def CreateHero():
+		Mage = [50, 10, 3, 3, 12]
+		Archer = [70, 8, 12, 5, 3]
+		Knight = [100, 12, 5, 12, 1]
+
+		Name = input("Enter Your Name: ").strip()
+
+		Age = input("Enter Your Age: ").strip()
+		while Age.isdigit() != True:
+			print(Fore.RED + "Wrong Input, Try Again", Style.RESET_ALL)
+			Age = input("Enter Your Age: ").strip()
+
+		Gender = input("Enter Your Gender[(M)ale/(F)emale]: ").strip()
+		while Gender != 'M' and Gender != 'F':
+			print(Fore.RED + "Wrong Input, Try Again", Style.RESET_ALL)
+			Gender = input("Enter Your Gender[(M)ale/(F)emale]: ").strip()
+		if Gender == 'M':
+			Gender = 'Male'
+		else:
+			Gender = 'Female'
+
+
+		Profession = input("Choose Character Profession[(M)age, (K)night, (A)rcher]: ").strip()
+		while Profession != 'M' and Profession != 'K' and Profession != 'A':
+			print(Fore.RED + "Wrong Input, Try Again", Style.RESET_ALL)
+			Profession = input("Choose Character Profession[(M)age, (K)night, (A)rcher]: ").strip()
+
+		if Profession == 'M':
+			MC = Hero(Name, Age, Gender, 'Mage', Mage[0], Mage[1], Mage[2], Mage[3], Mage[4], Arms, Shirt)
+		elif Profession == 'K':
+ 			MC = Hero(Name, Age, Gender, 'Knight', Knight[0], Knight[1], Knight[2], Knight[3], Knight[4], Arms, Shirt)
+		elif Profession == 'A':
+			MC = Hero(Name, Age, Gender, 'Archer', Archer[0], Archer[1], Archer[2], Archer[3], Archer[4], Arms, Shirt)
 		else:
 			raise ValueError
-#			print("Wrong input, choose from (N)orth, (S)outh, (E)ast, (W)est")
+
+		print(Fore.BLUE + '\nYour Character Status: ', Style.RESET_ALL)
+		MC.ShowStatus()
+		return MC
 
 
-class Monster():
-	
-	def __init__(self, Name: str, Description: str, Level: int, Health: int, Attack: int, Agility: int, Defense: int):
-		self.Name = Name
-		self.Description = Description
-		self.Level = Level
-		self.Health = Health
-		self.Attack = Attack
-		self.Agility = Agility
-		self.Defense = Defense
-		
-
-	def ShowStatus(self):
-		print(f'Name:{self.Name}\nLevel:{self.Level}\nHealth:{self.Health}\nAttack:{self.Attack}\nAgility:{self.Agility}\nDefence:{self.Defense}')
-
-	def ShowDescription(self):
-		print(self.Description)
-	
-	def GainDamage(self, enemy, Damage):
-		self.Health -= Damage
-		GainExp = 5 * 2**(self.Level) #Its the formula of ExpLimit series
-		if self.Health <= 0: 
-			print(f'{self.Name} Died, You get {GainExp} Experience')
-			enemy.AttributeIncrease(0, 0, 0, 0, 0, GainExp)
-			raise ValueError
-		
-	def DealDamage(self, enemy):
-		if random.random() >= ((enemy.Agility/100)*0.5): #evasion depending on agility			
-			Damage = abs((random.randint(0, self.Attack + 1)) - (enemy.Defense%10)) # damage dealing to enemy depending on hero attack and enemy defence
-			enemy.AttributeDecrease(Damage, 0, 0, 0, 0)
-
-"""
-Goblin = Monster('Goblin', 'Goblins are small, weak humanoids with green skin and heigth beetween 3 and 3.5 feet', 5, 10, 3, 10, 2)
-Orc = Monster('Orc', 'Orcs are brutal, violent humanoids with greyish or green skin and animalistic features', 20, 40, 12, 6, 10)
-Slime = Monster('Slime', 'Slimes are gelatinous creatures that can come in many different colors and sizes, the most common appearance is green and about knee height', 7, 15, 5, 5, 3)
-Giant = Monster('Giant', 'Giants are an extraordinarily large humanoid creatures, often with eldritch powers', 45, 150, 30, 3, 25)
-Skeleton = Monster('Skeleton', 'Skeletons are the animated skeletal remains of once-living creatures, used as disposable troops by necromancers', 10, 20, 7, 6, 5)
-Vampire = Monster('Vampire', 'Vampires are undead, nocturnal creatures that subsist on blood, they have superhuman powers and are sometimes able to shape-shift', 30, 100, 25, 30, 20)
-Ghoul = Monster('Ghoul', 'Ghouls are carrion eating undead creatures that dwell in graveyards and other lonely places', 18, 30, 10, 15, 10)
-Mummy = Monster('Mummy', 'Mummies are lumbering undead corpses wrapped in bandages, they are very resiliant to physical damage', 16, 35, 8, 5, 15)
-Bear = Monster('Bear', 'Bears are large heavy mammalsthat have long shaggy hair, rudimentary tails and plantigrade feet', 12, 20, 19, 10, 10)
-
-chainmail = Armor('ChainMail', 'the protective material that knights wear as part of a suit of armor', 'Knight', 1, 4, 6, 1)
-ironarmor = Armor('IronArmor', 'Regular rookie armor', 'Knight', 2, 8, 10, 1)
-knife = Weapon('Knife', 'Regular kitchen knife', 'Knight', 1, 10, 15, 0)
-sword = Weapon('Sword', '100 inche long swod that was owned by old merchante', 'Knight', 1, 20, 30, 5)
-NULL_W = Weapon('0', '0', '0', 0, 0, 0, 0)
-NULL_A = Armor('0', '0', '0', 0, 0, 0, 0)
-
-
-Bestiary = [Goblin, Orc, Slime, Giant, Skeleton, Vampire, Ghoul, Mummy, Bear]
-Objects = [ironarmor, knife, chainmail, sword]
-
-
-Levon = Hero('Levon', 18, 'male', 'Knight', 0, 0, 0, 0, 0, NULL_W, NULL_A)
+Room1 = Room('Starting Room', 0, 0)
+Levon = Hero('Levon', 18, 'male', 'Knight', 0, 0, 0, 0, 0, Arms, Shirt, Room1)
 Levon.AttributeIncrease(10, 10, 10, 10, 5, 40)
 Levon.PickWeapon(sword)
 Levon.PickArmor(ironarmor)
+
+Map = Room.CreateMap()
+
+for komnata in Map:
+	komnata.ShowDescription()
+
 while True:
-	try: 
-		Levon.Move(input())
-		#Levon.ShowStatus()
-	except ValueError:
-		print("Wrong input, choose from (N)orth, (S)outh, (E)ast, (W)est")
-	break
+	Levon.Move(input(), Map)
+	Levon.ShowStatus()
 
 Levon.ShowStatus()
 print("")
@@ -202,11 +212,8 @@ print("")
 
 while True:
 	print('You attaked Orc')
-	try:
-		Levon.DealDamage(Orc)
-	except ValueError:
-		break
-	
+	Levon.DealDamage(Orc)	
 	print('Orc attaked back')
 	Orc.DealDamage(Levon)
-"""
+
+Levon.ShowCurrentRoom()

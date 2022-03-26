@@ -42,6 +42,16 @@ class Weapon(Item):
 		print(self.Description)
 
 
+chainmail = Armor('ChainMail', 'the protective material that knights wear as part of a suit of armor', 'Knight', 1, 4, 6, 1)
+ironarmor = Armor('IronArmor', 'Regular rookie armor', 'Knight', 2, 8, 10, 1)
+knife = Weapon('Knife', 'Regular kitchen knife', 'Knight', 1, 10, 15, 0)
+sword = Weapon('Sword', '100 inche long swod that was owned by old merchante', 'Knight', 1, 20, 30, 5)
+Arms = Weapon('Arms', '0', '0', 0, 0, 0, 0)
+Shirt = Armor('Shirt', '0', '0', 0, 0, 0, 0)
+Stock = [ironarmor, knife, chainmail, sword]
+
+
+
 '''
 Table = Item('Table', 'Oak Table, looks like it was destroyed by some creature')
 Table.ShowDescription()

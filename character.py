@@ -8,7 +8,7 @@ class Hero:
 	
 	ExpLimit = 10
 
-	def __init__(self, Name: str, Age: int, Gender: str, Profession: str, Health: int, Attack: int, Agility: int, Defense: int, Intelligence: int, Weapon: Weapon, Armor: Armor, CurrentRoom: Room, Level: int = 1, Experience: int = 0, PositionX: int = 0, PositionY: int = 0):
+	def __init__(self, Name: str, Age: int, Gender: str, Profession: str, Health: int, Attack: int, Agility: int, Defense: int, Intelligence: int, Weapon: Weapon, Armor: Armor, CurrentRoom: Room = Room1, Level: int = 1, Experience: int = 0, PositionX: int = 0, PositionY: int = 0):
 		self.Name = Name
 		self.Age = Age
 		self.Gender = Gender
@@ -27,7 +27,8 @@ class Hero:
 		self.Intelligence = Intelligence
 
 	def ShowStatus(self):
-		print(f'Name: {self.Name}\nAge: {self.Age}\nGender: {self.Gender}\nProfession: {self.Profession}\nLevel: {self.Level}\nExperience: {self.Experience}\nRoom: {self.CurrentRoom.Name}\nPosition: {(self.PositionX, self.PositionY)}\nWeapon: {self.Weapon.Name}\nArmor: {self.Armor.Name}\nHealth: {self.Health}\nAttack: {self.Attack}\nAgility: {self.Agility}\nDefence: {self.Defense}\nInteligence: {self.Intelligence}')
+		print(Fore.YELLOW + '\nYour Character Status: ', Style.RESET_ALL)
+		print(Fore.BLUE + f'Name: {self.Name}\nAge: {self.Age}\nGender: {self.Gender}\nProfession: {self.Profession}\nLevel: {self.Level}\nExperience: {self.Experience}\nRoom: {self.CurrentRoom.Name}\nPosition: {(self.PositionX, self.PositionY)}\nWeapon: {self.Weapon.Name}\nArmor: {self.Armor.Name}\nHealth: {self.Health}\nAttack: {self.Attack}\nAgility: {self.Agility}\nDefence: {self.Defense}\nInteligence: {self.Intelligence}', Style.RESET_ALL)
 
 	def ShowCurrentRoom(self):
 		self.CurrentRoom.ShowDescription()
@@ -40,7 +41,7 @@ class Hero:
 	
 	def Death(self):
 		if self.Health <=0:
-			print("YOU DIED")	
+			print(Fore.RED + "YOU DIED", Style.RESET_ALL)	
 			sys.exit()
 			
 	def AttributeIncrease(self, Health: int, Attack: int, Agility: int, Defense: int, Intelligence: int, Experience: int):
@@ -70,6 +71,7 @@ class Hero:
 				ExtraDamage = self.Agility	
 			Damage = abs((random.randint(0, self.Attack)) - (enemy.Defense%10)) # damage dealing to enemy depending on hero attack and enemy defence
 			enemy.GainDamage(self, Damage)
+			print(f'You Deal {Damage} Damage to {enemy.Name}')
 	
 	def PickWeapon(self, Weapon):
 		if self.Level >= Weapon.LevelRequired and self.Profession == Weapon.ProfessionRequired:
@@ -90,9 +92,9 @@ class Hero:
 			self.Weapon = Weapon
 		else:
 			if self.Level < Weapon.LevelRequired:
-				print(f'You do not have Required Level: {Weapon.LevelRequired}')
+				print(Fore.RED + f'You do not have Required Level: {Weapon.LevelRequired}', Style.RESET_ALL)
 			else:
-				print(f'You do not have Required Profession: {Weapon.ProfessionRequired}')
+				print(Fore.RED + f'You do not have Required Profession: {Weapon.ProfessionRequired}', Style.RESET_ALL)
 	
 	def PickArmor(self, Armor):
 		if self.Level >= Armor.LevelRequired and self.Profession == Armor.ProfessionRequired:
@@ -113,10 +115,26 @@ class Hero:
 			self.Armor = Armor
 		else:
 			if self.Level < Armor.LevelRequired:
-				print(f'You do not have Required Level: {Armor.LevelRequired}')
+				print(Fore.RED + f'You do not have Required Level: {Armor.LevelRequired}', Style.RESET_ALL)
 			else:
-				print(f'You do not have Required Profession: {Armor.ProfessionRequired}')
-	
+				print(Fore.RED + f'You do not have Required Profession: {Armor.ProfessionRequired}', Style.RESET_ALL)
+
+	def Battle(self, enemy):	
+		while True:
+			if random.randint(0, 1) == 1:
+				print(Fore.YELLOW + 'It is Your Turn to Attack, Enter "A" to Attack', Style.RESET_ALL)
+				res = input()
+				while res != "A":
+					print(Fore.YELLOW + 'Wrong Input, Enter "A" to Attack', Style.RESET_ALL)
+					res = input()
+				try:
+					self.DealDamage(enemy)
+				except ValueError:
+					break
+			else:
+				print(Fore.RED + f'It is {enemy.Name} Turn to Attack', Style.RESET_ALL)
+				enemy.DealDamage(self)			
+
 	def Move(self, direction, Map):
 		if direction == 'N':
 			self.PositionY += 1
@@ -124,28 +142,66 @@ class Hero:
 				for Room in Map:
 					if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY - 1: 
 						self.CurrentRoom = Room
+						break
 		elif direction == 'S':
 			self.PositionY -= 1
 			if (self.PositionX % 5 == 0 and self.PositionY % 5 == 0) and (self.PositionX + self.PositionY) % 2 != 0:
 				for Room in Map:
 					if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY + 1: 
 						self.CurrentRoom = Room
+						break
 		elif direction == 'E':
 			self.PositionX += 1
 			if (self.PositionX % 5 == 0 and self.PositionY % 5 == 0) and (self.PositionX + self.PositionY) % 2 != 0:
 				for Room in Map:
 					if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX - 1 and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY: 
 						self.CurrentRoom = Room
+						break
 		elif direction == 'W':
 			self.PositionX -= 1
 			if (self.PositionX % 5 == 0 and self.PositionY % 5 == 0) and (self.PositionX + self.PositionY) % 2 != 0:
 				for Room in Map:
 					if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX + 1 and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY: 
 						self.CurrentRoom = Room
+						break
 		else:
-			print("Wrong input, choose from (N)orth, (S)outh, (E)ast, (W)est")
+			print(Fore.RED + 'Wrong input, choose from (N)orth, (S)outh, (E)ast, (W)est', Style.RESET_ALL)
+		
+		RoomCell =  self.CurrentRoom.Interior[self.PositionX % 10][self.PositionY % 10] 
 		
 
+		if isinstance(RoomCell, Monster):
+			print(Fore.YELLOW + f'You Were Attaked by {RoomCell.Name}', Style.RESET_ALL)
+			self.Battle(RoomCell)
+			 			
+		elif isinstance(RoomCell, Weapon):
+			print(Fore.YELLOW + f'You Found Weapon {RoomCell.Name}, To Pick It Enter "Pick", To Drop It Enter "Drop", To See Weapon Description Enter "Description"', Style.RESET_ALL)
+			res = input()
+			while res != 'Drop':
+				if res == 'Pick':
+					self.PickWeapon(RoomCell)
+					RoomCell = 0		
+					break
+				elif res == 'Description':
+					RoomCell.ShowStatus()
+				else:
+					print(Fore.RED + "Wrong Input, Try Again", Style.RESET_ALL)
+				res = input()
+			
+		elif isinstance(RoomCell, Armor):
+			print(Fore.YELLOW + f'You Found Armor {RoomCell.Name}, To Pick It Enter "Pick", To Drop It Enter "Drop", To See Armor Description Enter "Description"', Style.RESET_ALL)
+			res = input()
+			while res != 'Drop':
+				if res == 'Pick':
+					self.PickArmor(RoomCell)
+					RoomCell = 0		
+					break
+				elif res == 'Description':
+					RoomCell.ShowStatus()
+				else:
+					print(Fore.RED + "Wrong Input, Try Again", Style.RESET_ALL)
+				res = input()
+				
 	def CreateHero():
 		Mage = [50, 10, 3, 3, 12]
 		Archer = [70, 8, 12, 5, 3]
@@ -167,7 +223,6 @@ class Hero:
 		else:
 			Gender = 'Female'
 
-
 		Profession = input("Choose Character Profession[(M)age, (K)night, (A)rcher]: ").strip()
 		while Profession != 'M' and Profession != 'K' and Profession != 'A':
 			print(Fore.RED + "Wrong Input, Try Again", Style.RESET_ALL)
@@ -182,13 +237,11 @@ class Hero:
 		else:
 			raise ValueError
 
-		print(Fore.BLUE + '\nYour Character Status: ', Style.RESET_ALL)
 		MC.ShowStatus()
 		return MC
 
-
-Room1 = Room('Starting Room', 0, 0)
-Levon = Hero('Levon', 18, 'male', 'Knight', 0, 0, 0, 0, 0, Arms, Shirt, Room1)
+"""
+Levon = Hero('Levon', 18, 'male', 'Knight', 0, 0, 0, 0, 0, Arms, Shirt)
 Levon.AttributeIncrease(10, 10, 10, 10, 5, 40)
 Levon.PickWeapon(sword)
 Levon.PickArmor(ironarmor)
@@ -217,3 +270,6 @@ while True:
 	Orc.DealDamage(Levon)
 
 Levon.ShowCurrentRoom()
+
+
+"""

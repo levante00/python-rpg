@@ -3,8 +3,6 @@ import Enemy
 import Items
 import random
 from colorama import Fore, Back, Style
-import curses
-import time
 
 class Room:
 	def __init__(self, Name: str, GlobalPositionX: int, GlobalPositionY: int, Interior: list = [], Monsters: list = [], Items: list = []):
@@ -83,12 +81,12 @@ class Room:
 #		CoordinateX = random.sample([-2, -1, 0, 1, 2], 5)
 #		CoordinateY = random.sample([-2, -1, 0, 1, 2], 5)
 		CoordinateX = [-2, -1, 0, 1, 2]
-		CoordinateY = [-2, -1, 0, 1, 2]
+		CoordinateY = [2, 1, 0, -1, -2]
 		Coordinates = []
 		
-		for i in CoordinateX:
-			for j in CoordinateY:
-				Coordinates.append([i, j])
+		for i in CoordinateY:
+			for j in CoordinateX:
+				Coordinates.append([j, i])
 		
 		for i in range(25):
 			Room_res = Room(Names[i], Coordinates[i][0], Coordinates[i][1])
@@ -102,7 +100,7 @@ class Room:
 
 		
 
-	def ShowMap(self, Map):
+	def ShowMap(Map):
 		RowLen = int(len(Map) ** (1/2))
 		for k in range(0, len(Map), RowLen):
 			for i in range(-1, 11):
@@ -119,17 +117,19 @@ class Room:
 						else:
 							print("0", end = " ")
 				print("")
-			
+
+
+Room1 = Room('Starting Room', 0, 0)
+
+		
 """
 Map = Room.CreateMap()
 
-for Room in Map:
-#	print(Room.GlobalPositionX, Room.GlobalPositionY)
-	Room.ShowDescription()
-	Room.ShowInterior()
+for Komnata in Map:
+#	print(Komnata.GlobalPositionX, Komnata.GlobalPositionY)
+	Komnata.ShowDescription()
+	Komnata.ShowInterior()
 
 Room.ShowMap(Map)
 
 """
-
-

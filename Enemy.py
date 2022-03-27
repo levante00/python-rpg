@@ -28,8 +28,11 @@ class Monster():
 
     def DealDamage(self, enemy):
         if random.random() >= ((enemy.Agility/100)*0.5): #evasion depending on agility          
-            Damage = abs((random.randint(0, self.Attack + 1)) - (enemy.Defense%10)) # damage dealing to enemy depending on hero attack and enemy defence
+            Damage = abs((random.randint(0, self.Attack + 1)) - (enemy.Defense%10)) # damage dealing to enemy depending on hero attack and enemy defence 
+            print(f'You Get a Direct Hit and Received {Damage} Damage')	# This is for Hero to know how much damage he took
             enemy.AttributeDecrease(Damage, 0, 0, 0, 0)
+        else:
+            print('You Dodged the Attack\n') #This is for Hero to know that he avoided the Attack
 
 
 Goblin = Monster('Goblin', 'Goblins are small, weak humanoids with green skin and heigth beetween 3 and 3.5 feet', 5, 10, 3, 10, 2)

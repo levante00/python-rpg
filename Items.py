@@ -5,7 +5,7 @@ class Item:
 		self.Description = Description
 
 	def ShowDescription(self):
-		print(f'Name:{self.Name}\nDescription:{self.Description}')
+		print(f'Name: {self.Name}\nDescription: {self.Description}')
 
 
 class Armor(Item):
@@ -19,7 +19,7 @@ class Armor(Item):
 		self.Intelligence = Intelligence
 
 	def ShowStatus(self):
-		print(f'Name:{self.Name}\nProfession Required:{self.ProfessionRequired}\nLevel Required:{self.LevelRequired}\nAgility:{self.Agility}\nDefense:{self.Defense}\nIntelligence:{self.Intelligence}')
+		print(f'Name: {self.Name}\nProfession Required: {self.ProfessionRequired}\nLevel Required: {self.LevelRequired}\nAgility: {self.Agility}\nDefense: {self.Defense}\nIntelligence: {self.Intelligence}')
 
 	def ShowDescription(self):
 		print(self.Description)
@@ -36,7 +36,7 @@ class Weapon(Item):
 		self.Intelligence = Intelligence
 
 	def ShowStatus(self):
-		print(f'Name:{self.Name}\nProfession Required:{self.ProfessionRequired}\nLevel Required:{self.LevelRequired}\nAttack:{self.Attack}\nAgility:{self.Agility}\nIntelligence:{self.Intelligence}')
+		print(f'Name: {self.Name}\nProfession Required: {self.ProfessionRequired}\nLevel Required: {self.LevelRequired}\nAttack: {self.Attack}\nAgility: {self.Agility}\nIntelligence: {self.Intelligence}')
 
 	def ShowDescription(self):
 		print(self.Description)

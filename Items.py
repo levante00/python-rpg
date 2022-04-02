@@ -1,3 +1,5 @@
+from colorama import Fore, Back, Style
+
 class Item:
 
 	def __init__(self, Name: str, Description: str):
@@ -6,6 +8,10 @@ class Item:
 
 	def ShowDescription(self):
 		print(f'Name: {self.Name}\nDescription: {self.Description}')
+	
+	def ShowStock():
+		for Item in Stock:
+			Item.ShowStatus()
 
 
 class Armor(Item):
@@ -19,10 +25,7 @@ class Armor(Item):
 		self.Intelligence = Intelligence
 
 	def ShowStatus(self):
-		print(f'Name: {self.Name}\nProfession Required: {self.ProfessionRequired}\nLevel Required: {self.LevelRequired}\nAgility: {self.Agility}\nDefense: {self.Defense}\nIntelligence: {self.Intelligence}')
-
-	def ShowDescription(self):
-		print(self.Description)
+		print(Fore.BLUE + f'Name: {self.Name}\nProfession Required: {self.ProfessionRequired}\nLevel Required: {self.LevelRequired}\nAgility: {self.Agility}\nDefense: {self.Defense}\nIntelligence: {self.Intelligence}\n', Style.RESET_ALL)
 
 
 class Weapon(Item):
@@ -36,10 +39,8 @@ class Weapon(Item):
 		self.Intelligence = Intelligence
 
 	def ShowStatus(self):
-		print(f'Name: {self.Name}\nProfession Required: {self.ProfessionRequired}\nLevel Required: {self.LevelRequired}\nAttack: {self.Attack}\nAgility: {self.Agility}\nIntelligence: {self.Intelligence}')
-
-	def ShowDescription(self):
-		print(self.Description)
+		print(Fore.BLUE + f'Name: {self.Name}\nProfession Required: {self.ProfessionRequired}\nLevel Required: {self.LevelRequired}\nAttack: {self.Attack}\nAgility: {self.Agility}\nIntelligence: {self.Intelligence}\n', Style.RESET_ALL)
+	
 
 
 chainmail = Armor('ChainMail', 'the protective material that knights wear as part of a suit of armor', 'Knight', 1, 4, 6, 1)
@@ -49,21 +50,3 @@ sword = Weapon('Sword', '100 inche long swod that was owned by old merchante', '
 Arms = Weapon('Arms', '0', '0', 0, 0, 0, 0)
 Shirt = Armor('Shirt', '0', '0', 0, 0, 0, 0)
 Stock = [ironarmor, knife, chainmail, sword]
-
-
-
-'''
-Table = Item('Table', 'Oak Table, looks like it was destroyed by some creature')
-Table.ShowDescription()
-print("")
-
-chainmail = Armor('ChainMail', 'the protective material that knights wear as part of a suit of armor', 'Knight', 30, 20, 100, 10)
-chainmail.ShowStatus()
-chainmail.ShowDescription()
-print("")
-
-knife = Weapon('Knife', 'Regular kitchen knife', 'None', 1, 10, 15, 0)
-knife.ShowStatus()
-knife.ShowDescription()
-print("")
-'''

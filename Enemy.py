@@ -1,38 +1,44 @@
 import random
-
+from colorama import Fore, Back, Style
 class Monster():
 
-    def __init__(self, Name: str, Description: str, Level: int, Health: int, Attack: int, Agility: int, Defense: int):
-        self.Name = Name
-        self.Description = Description
-        self.Level = Level
-        self.Health = Health
-        self.Attack = Attack
-        self.Agility = Agility
-        self.Defense = Defense
+	def __init__(self, Name: str, Description: str, Level: int, Health: int, Attack: int, Agility: int, Defense: int):
+		self.Name = Name
+		self.Description = Description
+		self.Level = Level
+		self.Health = Health
+		self.Attack = Attack
+		self.Agility = Agility
+		self.Defense = Defense
 
+	def ShowStatus(self):
+		print(Fore.BLUE + f'Name: {self.Name}\nLevel: {self.Level}\nHealth: {self.Health}\nAttack: {self.Attack}\nAgility: {self.Agility}\nDefence: {self.Defense}', Style.RESET_ALL)
 
-    def ShowStatus(self):
-        print(f'Name:{self.Name}\nLevel:{self.Level}\nHealth:{self.Health}\nAttack:{self.Attack}\nAgility:{self.Agility}\nDefence:{self.Defense}')
+	def ShowDescription(self):
+		print(self.Description)
 
-    def ShowDescription(self):
-        print(self.Description)
+	def ShowBestiary():
+		print(Fore.YELLOW + '\nMonster List:', Style.RESET_ALL)
+		for Monster in Bestiary:
+			Monster.ShowStatus()
+			Monster.ShowDescription()
+			print('')
 
-    def GainDamage(self, enemy, Damage):
-        self.Health -= Damage
-        GainExp = 5 * 2**(self.Level) #Its the formula of ExpLimit series
-        if self.Health <= 0:
-            print(f'{self.Name} Died, You get {GainExp} Experience')
-            enemy.AttributeIncrease(0, 0, 0, 0, 0, GainExp)
-            raise ValueError
+	def GainDamage(self, enemy, Damage):
+		self.Health -= Damage
+		GainExp = 5 * 2**(self.Level)  # Its the Formula of ExpLimit Series
+		if self.Health <= 0:
+			print(Fore.YELLOW + f'{self.Name} Died, You get {GainExp} Experience', Style.RESET_ALL)
+			enemy.AttributeIncrease(0, 0, 0, 0, 0, GainExp)
+			raise ValueError
 
-    def DealDamage(self, enemy):
-        if random.random() >= ((enemy.Agility/100)*0.5): #evasion depending on agility          
-            Damage = abs((random.randint(0, self.Attack + 1)) - (enemy.Defense%10)) # damage dealing to enemy depending on hero attack and enemy defence 
-            print(f'You Get a Direct Hit and Received {Damage} Damage')	# This is for Hero to know how much damage he took
-            enemy.AttributeDecrease(Damage, 0, 0, 0, 0)
-        else:
-            print('You Dodged the Attack\n') #This is for Hero to know that he avoided the Attack
+	def DealDamage(self, enemy):
+		if random.random() >= ((enemy.Agility/100)*0.5):  # Evasion Chance Depending on Agility     
+			Damage = abs((random.randint(0, self.Attack + 1)) - (enemy.Defense%10))  # Damage Being Dealed to Enemy Depending on Hero Attack and Enemy Defence
+			print(f'You Get a Direct Hit and Received {Damage} Damage')	 # This is for Hero to Know How Much Damage He Took
+			enemy.AttributeDecrease(Damage, 0, 0, 0, 0)
+		else:
+			print('You Dodged the Attack')  # This is for Hero to Know that He Avoided the Attack
 
 
 Goblin = Monster('Goblin', 'Goblins are small, weak humanoids with green skin and heigth beetween 3 and 3.5 feet', 5, 10, 3, 10, 2)

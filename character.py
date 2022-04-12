@@ -166,12 +166,12 @@ class Hero:
 		if direction == 'N':
 			self.PositionY += 1
 			if self.RoomPositionX == self.CurrentRoom.Size // 2 and self.RoomPositionY == 0:  # If Hero is Next to The Door Change The Room
-				if self.CurrentRoom.GlobalPositionY == 2:
-					print(Fore.GREEN + "YOU WON THE GAME", Style.RESET_ALL)
-					sys.exit()
-				elif self.CurrentRoom.Monsters != []:
+				if self.CurrentRoom.Monsters != []:
 					print(Fore.RED + 'You Can not Move to The Next Room Until You Do not Clear Current Room', Style.RESET_ALL)
 					self.PositionY -= 1
+				elif self.CurrentRoom.GlobalPositionY == 2:
+					print(Fore.GREEN + "YOU WON THE GAME", Style.RESET_ALL)
+					sys.exit()
 				else:	
 					for Room in Map:
 						if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY - 1: 
@@ -196,12 +196,12 @@ class Hero:
 		elif direction == 'S':
 			self.PositionY -= 1
 			if self.RoomPositionX  == self.CurrentRoom.Size // 2 and self.RoomPositionY == self.CurrentRoom.Size - 1:  # If Hero is Next to The Door Change The Room
-				if self.CurrentRoom.GlobalPositionY == -2:
-					print(Fore.GREEN + "YOU WON THE GAME", Style.RESET_ALL)
-					sys.exit()
-				elif self.CurrentRoom.Monsters != []:
+				if self.CurrentRoom.Monsters != []:
 					print(Fore.RED + 'You Can not Move to The Next Room Until You Do not Clear Current Room', Style.RESET_ALL)
 					self.PositionY += 1
+				elif self.CurrentRoom.GlobalPositionY == -2:
+					print(Fore.GREEN + "YOU WON THE GAME", Style.RESET_ALL)
+					sys.exit()
 				else:
 					for Room in Map:
 						if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY + 1: 
@@ -226,12 +226,12 @@ class Hero:
 		elif direction == 'E':
 			self.PositionX += 1
 			if self.RoomPositionX == self.CurrentRoom.Size - 1 and self.RoomPositionY == self.CurrentRoom.Size // 2:  # If Hero is Next to The Door Change The Room
-				if self.CurrentRoom.GlobalPositionX == 2:
-					print(Fore.GREEN + "YOU WON THE GAME", Style.RESET_ALL)
-					sys.exit()
-				elif self.CurrentRoom.Monsters != []:
+				if self.CurrentRoom.Monsters != []:
 					print(Fore.RED + 'You Can not Move to The Next Room Until You Do not Clear Current Room', Style.RESET_ALL)
 					self.PositionX -= 1
+				elif self.CurrentRoom.GlobalPositionX == 2:
+					print(Fore.GREEN + "YOU WON THE GAME", Style.RESET_ALL)
+					sys.exit()
 				else:
 					for Room in Map:
 						if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX - 1 and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY: 
@@ -256,12 +256,12 @@ class Hero:
 		elif direction == 'W':
 			self.PositionX -= 1
 			if self.RoomPositionX == 0 and self.RoomPositionY == self.CurrentRoom.Size // 2:  # If Hero is Next to The Door Change The Room
-				if self.CurrentRoom.GlobalPositionX == -2:
-					print(Fore.GREEN + "YOU WON THE GAME", Style.RESET_ALL)
-					sys.exit()
-				elif self.CurrentRoom.Monsters != []:
+				if self.CurrentRoom.Monsters != []:
 					print(Fore.RED + 'You Can not Move to The Next Room Until You Do not Clear Current Room', Style.RESET_ALL)
 					self.PositionX += 1
+				elif self.CurrentRoom.GlobalPositionX == -2:
+					print(Fore.GREEN + "YOU WON THE GAME", Style.RESET_ALL)
+					sys.exit()
 				else:
 					for Room in Map:
 						if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX + 1 and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY: 

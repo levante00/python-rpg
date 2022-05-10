@@ -1,5 +1,7 @@
 import random
 from colorama import Fore, Back, Style
+
+
 class Monster():
 
 	def __init__(self, Name: str, Description: str, Level: int, Health: int, Attack: int, Agility: int, Defense: int):

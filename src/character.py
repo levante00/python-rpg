@@ -1,13 +1,15 @@
 import random
 import sys
-from Items import *
+from src.Items import *
 from colorama import Fore, Back, Style
-from Room import *
-from Enemy import Monster
+from src.Room import *
+from src.Enemy import Monster
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"  # Its for The Print Which Pygame Automatically do After Being Imported
 from pygame import mixer
 import time
+
+
 class Hero:
 	
 	ExpLimit = 10

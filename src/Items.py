@@ -1,5 +1,6 @@
 from colorama import Fore, Back, Style
 
+
 class Item:
 
 	def __init__(self, Name: str, Description: str):

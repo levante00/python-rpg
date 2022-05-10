@@ -1,10 +1,11 @@
 import random
-import Enemy
-import Items
+import src.Enemy as Enemy
+import src.Items as Items
 import random
 from colorama import Fore, Back, Style
 import curses	
 import time
+
 
 class Room:
 	
@@ -83,7 +84,7 @@ class Room:
 		print('')
 	
 	def CreateMap():
-		RoomNumber = 25  # Has to be Square of Odd Number Bigger Then 1
+		RoomNumber = 81  # Has to be Square of Odd Number Bigger Then 1
 		Room1 = Room('Starting Room', 0, 0, "Music/Start/Survivors_Bivouac.mp3")
 		file1 = open('Data/RoomNames.txt', "r")
 		Names = random.sample(file1.read().splitlines(), RoomNumber)

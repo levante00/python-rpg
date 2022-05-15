@@ -1,46 +1,57 @@
 import random
 from colorama import Fore, Back, Style
 
+class MonsterDeath(Exception):
+	pass
 
 class Monster():
+	"""Class used for creating Monsters to locate in Dangeon"""
+	def __init__(self, name: str, description: str, level: int, health: int, attack: int, agility: int, defense: int):
+		self.name = name
+		self.description = description
+		self.level = level
+		self.health = health
+		self.attack = attack
+		self.agility = agility
+		self.defense = defense
 
-	def __init__(self, Name: str, Description: str, Level: int, Health: int, Attack: int, Agility: int, Defense: int):
-		self.Name = Name
-		self.Description = Description
-		self.Level = Level
-		self.Health = Health
-		self.Attack = Attack
-		self.Agility = Agility
-		self.Defense = Defense
+	def show_status(self) -> None:
+		"""Prints Monsters all attributes"""
+		TEXT = (f'Name: {self.name}\nLevel: {self.level}\nHealth: {self.health}\n'
+				f'Attack: {self.attack}\nAgility: {self.agility}\nDefence: {self.defense}') 
+		
+		print(Fore.BLUE + TEXT, Style.RESET_ALL)
 
-	def ShowStatus(self):
-		print(Fore.BLUE + f'Name: {self.Name}\nLevel: {self.Level}\nHealth: {self.Health}\nAttack: {self.Attack}\nAgility: {self.Agility}\nDefence: {self.Defense}', Style.RESET_ALL)
+	def show_description(self) -> None:
+		print(self.description)
 
-	def ShowDescription(self):
-		print(self.Description)
-
-	def ShowBestiary():
+	def show_bestiary() -> None:
+		"""Print all the Monsters list in the game with
+		their characteristics and descriptions"""
 		print(Fore.YELLOW + '\nMonster List:', Style.RESET_ALL)
-		for Monster in Bestiary:
-			Monster.ShowStatus()
-			Monster.ShowDescription()
+		for monster in bestiary:
+			monster.show_status()
+			monster.show_description()
 			print('')
 
-	def GainDamage(self, enemy, Damage):
-		self.Health -= Damage
-		GainExp = 5 * 2**(self.Level)  # Its the Formula of ExpLimit Series
-		if self.Health <= 0:
-			print(Fore.YELLOW + f'{self.Name} Died, You get {GainExp} Experience', Style.RESET_ALL)
-			enemy.AttributeIncrease(0, 0, 0, 0, 0, GainExp)
-			raise ValueError
+	def gain_damage(self, enemy: "Hero", damage: int) -> None:
+		"""Based on Heroes damage lowers Monsters HP"""
+		self.health -= damage
+		gain_exp = 5 * 2**(self.level)  # Its the Formula of ExpLimit Series
+		if self.health <= 0:
+			print(Fore.YELLOW + f'{self.name} Died, You get {gain_exp} Experience', Style.RESET_ALL)
+			enemy.attribute_increase(0, 0, 0, 0, 0, gain_exp)
+			raise MonsterDeath
 
-	def DealDamage(self, enemy):
-		if random.random() >= ((enemy.Agility/100)*0.5):  # Evasion Chance Depending on Agility     
-			Damage = abs((random.randint(0, self.Attack + 1)) - (enemy.Defense%10))  # Damage Being Dealed to Enemy Depending on Hero Attack and Enemy Defence
-			print(f'You Get a Direct Hit and Received {Damage} Damage')	 # This is for Hero to Know How Much Damage He Took
-			enemy.AttributeDecrease(Damage, 0, 0, 0, 0)
+	def deal_damage(self, enemy: "Hero") -> None:
+		"""Used to lower Heroes HP based on Monster Attack and Hero Defence.
+		Also on Hero can evade the attack if his agility is high"""
+		if random.random() >= ((enemy.agility/100)*0.5):  # Evasion Chance Depending on Agility     
+			damage = abs((random.randint(0, self.attack + 1)) - (enemy.defense%10))  
+			print(f'You Get a Direct Hit and Received {damage} Damage')	 
+			enemy.attribute_decrease(damage, 0, 0, 0, 0)
 		else:
-			print('You Dodged the Attack')  # This is for Hero to Know that He Avoided the Attack
+			print('You Dodged the Attack')
 
 
 Goblin = Monster('Goblin', 'Goblins are small, weak humanoids with green skin and heigth beetween 3 and 3.5 feet', 5, 10, 3, 10, 2)
@@ -52,5 +63,5 @@ Vampire = Monster('Vampire', 'Vampires are undead, nocturnal creatures that subs
 Ghoul = Monster('Ghoul', 'Ghouls are carrion eating undead creatures that dwell in graveyards and other lonely places', 18, 30, 10, 15, 10)
 Mummy = Monster('Mummy', 'Mummies are lumbering undead corpses wrapped in bandages, they are very resiliant to physical damage', 16, 35, 8, 5, 15)
 Bear = Monster('Bear', 'Bears are large heavy mammalsthat have long shaggy hair, rudimentary tails and plantigrade feet', 12, 20, 19, 10, 10)
-Bestiary = [Goblin, Orc, Slime, Giant, Skeleton, Vampire, Ghoul, Mummy, Bear]
+bestiary = [Goblin, Orc, Slime, Giant, Skeleton, Vampire, Ghoul, Mummy, Bear]
 

@@ -3,359 +3,419 @@ import sys
 from src.Items import *
 from colorama import Fore, Back, Style
 from src.Room import *
-from src.Enemy import Monster
+from src.Enemy import Monster, MonsterDeath
+from src.ascii_art import AsciiArt
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"  # Its for The Print Which Pygame Automatically do After Being Imported
 from pygame import mixer
 import time
 
 
+class CannotLeave(Exception):
+	def __init__(self, message):
+		self.text = message
+
+
 class Hero:
-	
-	ExpLimit = 10
+	"""Class of the game characters"""
+	exp_limit = 10
 
-	def __init__(self, Name: str, Age: int, Gender: str, Profession: str, Health: int, Attack: int, Agility: int, Defense: int, Intelligence: int, Weapon: Weapon, Armor: Armor, CurrentRoom: Room = Room1, Level: int = 1, Experience: int = 0, PositionX: int = 0, PositionY: int = 0, RoomPositionX: int = 4, RoomPositionY: int = 4):
-		self.Name = Name
-		self.Age = Age
-		self.Gender = Gender
-		self.Profession = Profession
-		self.Level = Level
-		self.Experience = Experience 
-		self.PositionX = PositionX  # Hero X Cooridnate in Global Coordinates
-		self.PositionY = PositionY  # Hero Y Coordinate in Global Coordinates
-		self.CurrentRoom = CurrentRoom		
-		self.RoomPositionX = RoomPositionX  # Hero X Coordinate in The Current Room
-		self.RoomPositionY = RoomPositionY  # Hero Y Coordinate in The Current Room
-		self.Weapon = Weapon
-		self.Armor = Armor
-		self.Health = Health
-		self.Attack = Attack
-		self.Agility = Agility
-		self.Defense = Defense
-		self.Intelligence = Intelligence
+	def __init__(
+			self, name: str, age: int, gender: str, profession: str,
+			health: int, attack: int, agility: int, defense: int, intelligence: int, 
+			weapon: Weapon, armor: Armor, current_room: Room = room1, 
+			level: int = 1, experience: int = 0, position_x: int = 0, 
+			position_y: int = 0, room_position_x: int = 4, room_position_y: int = 4):
+		self.name = name
+		self.age = age  
+		self.gender = gender
+		self.profession = profession
+		self.level = level
+		self.experience = experience 
+		self.position_x = position_x  # Hero X Cooridnate in Global Coordinates
+		self.position_y = position_y  # Hero Y Coordinate in Global Coordinates
+		self.current_room = current_room		
+		self.room_position_x = room_position_x  # Hero X Coordinate in The Current Room
+		self.room_position_y = room_position_y  # Hero Y Coordinate in The Current Room
+		self.weapon = weapon
+		self.armor = armor
+		self.health = health
+		self.attack = attack
+		self.agility = agility
+		self.defense = defense
+		self.intelligence = intelligence
 
-	def ShowStatus(self):
-		print(Fore.YELLOW + '\nYour Character Status: ', Style.RESET_ALL)
-		print(Fore.BLUE + f'Name: {self.Name}\nAge: {self.Age}\nGender: {self.Gender}\nProfession: {self.Profession}\nLevel: {self.Level}\nExperience: {self.Experience}\nRoom: {self.CurrentRoom.Name}\nPosition: {(self.PositionX, self.PositionY)}\nWeapon: {self.Weapon.Name}\nArmor: {self.Armor.Name}\nHealth: {self.Health}\nAttack: {self.Attack}\nAgility: {self.Agility}\nDefence: {self.Defense}\nInteligence: {self.Intelligence}\n', Style.RESET_ALL)
+	def show_status(self) -> None:
+		"""Prints Heroes attributes"""
+		TEXT_1 =  '\nYour Character Status: '
+		TEXT_2 = (f'Name: {self.name}\nAge: {self.age}\n'
+				  f'Gender: {self.gender}\nProfession: {self.profession}\n'
+				  f'Level: {self.level}\nExperience: {self.experience}\n'
+				  f'Room: {self.current_room.name}\nPosition: {(self.position_x, self.position_y)}\n'
+				  f'Weapon: {self.weapon.name}\nArmor: {self.armor.name}\n'
+				  f'Health: {self.health}\nAttack: {self.attack}\n'
+				  f'Agility: {self.agility}\nDefence: {self.defense}\n'
+				  f'Inteligence: {self.intelligence}\n')
 
-	def LevelUp(self):
-		while self.Experience >= Hero.ExpLimit:
-			self.Level += 1
-			self.Experience = self.Experience - Hero.ExpLimit
-			Hero.ExpLimit *= 2  # Every Time After Leveling Up Experience Limit for Next Level Doubles
-			self.AttributeIncrease(10, 1, 1, 1, 1, 0)
+		print(Fore.YELLOW + TEXT_1, Style.RESET_ALL)
+		print(Fore.BLUE + TEXT_2, Style.RESET_ALL)
+
+	def level_up(self) -> None:
+		"""Used after defeating the monster and gaining his EXP.
+		Increases heroes attributes by given number"""
+		EXP_LIMIT_MULTIPLAYER = 2
+		while self.experience >= Hero.exp_limit:
+			self.level += 1
+			self.experience = self.experience - Hero.exp_limit
+			Hero.exp_limit *= EXP_LIMIT_MULTIPLAYER
+			self.attribute_increase(10, 1, 1, 1, 1, 0)
 			
-	def Death(self):
-		if self.Health <= 0:
-			print(Fore.RED + "YOU DIED", Style.RESET_ALL)	
-			sys.exit()  # Closing The Program After The Hero Death
-			
-	def AttributeIncrease(self, Health: int, Attack: int, Agility: int, Defense: int, Intelligence: int, Experience: int):
-		self.Health += Health
-		self.Attack += Attack
-		self.Agility += Agility
-		self.Defense += Defense
-		self.Intelligence += Intelligence
-		self.Experience += Experience
-		self.LevelUp()
-	
-	def AttributeDecrease(self, Health: int, Attack: int, Agility: int, Defense: int, Intelligence: int):
-		self.Health -= Health
-		self.Attack -= Attack
-		self.Agility -= Agility
-		self.Defense -= Defense
-		self.Intelligence -= Intelligence
-		self.Death()
+	def death(self) -> None:
+		"""End the game and closes the game loop if Heroes HP <= 0"""
+		SLEEP_CONST = 6
+		MUSIC_VOLUME = 0.9
+		if self.health <= 0:
+			AsciiArt.death_print()	
 
-	def DealDamage(self, enemy):
-		if random.random() >= ((enemy.Agility/100)*0.5):  # Evasion Chance Depending on Agility
-			if self.Profession == 'Knight':	
-				ExtraDamage = self.Defense % 10			
-			elif self.Profession == 'Mage':	
-				ExtraDamage = self.Intelligence % 10
-			elif self.Profession == 'Archer':	
-				ExtraDamage = self.Agility	
-			Damage = abs((random.randint(0, self.Attack)) - (enemy.Defense%10)) # Damage Being Dealed to Enemy Depending on Hero Attack and Enemy Defence
-			enemy.GainDamage(self, Damage)
-			print(f'You Deal {Damage} Damage to {enemy.Name}')
+			mixer.music.stop()
+			mixer.music.load("Music/Ending/You_Died.mp3")
+			mixer.music.set_volume(MUSIC_VOLUME)
+			mixer.music.play()
+
+			time.sleep(SLEEP_CONST)
+
+			sys.exit()  
+	def win(self) -> None:
+		SLEEP_CONST = 3
+		MUSIC_VOLUME = 0.9
+		AsciiArt.win_print()
+		mixer.music.stop()
+		mixer.music.load("Music/Ending/Win.mp3")
+		mixer.music.set_volume(MUSIC_VOLUME)
+		mixer.music.play()
+
+		time.sleep(SLEEP_CONST)
+		sys.exit()
+	
+	def attribute_increase(
+			self, health: int, attack: int, 
+			agility: int, defense: int, intelligence: int, 
+			experience: int) -> None:
+
+		self.health += health
+		self.attack += attack
+		self.agility += agility
+		self.defense += defense
+		self.intelligence += intelligence
+		self.experience += experience
+		self.level_up()
+	
+	def attribute_decrease(
+			self, health: int, attack: int,
+			agility: int, defense: int, intelligence: int) -> None:
+
+		self.health -= health
+		self.attack -= attack
+		self.agility -= agility
+		self.defense -= defense
+		self.intelligence -= intelligence
+		self.death()
+
+	def deal_damage(self, enemy: Monster) -> None:
+		EVASION_DEV = 100
+		EVASION_MULT = 0.5
+		DEF_PERCENT = 10
+		INT_PERCENT = 10
+
+		# Evasion Chance Depending on Agility
+		if random.random() >= ((enemy.agility/EVASION_DEV)*EVASION_MULT): 			
+			if self.profession == 'Knight':	
+				extra_damage = (self.defense) % (DEF_PERCENT)			
+			elif self.profession == 'Mage':	
+				extra_damage = (self.intelligence) % (INT_PERCENT)
+			elif self.profession == 'Archer':	
+				extra_damage = self.agility	
+
+			# Damage Being Dealed to Enemy Depending on Hero Attack and Enemy Defence
+			damage = abs((random.randint(0, self.attack)) - (enemy.defense%10)) 			
+			enemy.gain_damage(self, damage)
+			print(f'You Deal {damage} Damage to {enemy.name}')
 		else:
-			print(f'{enemy.Name} Dogded the Attack')
+			print(f'{enemy.name} Dogded the Attack')
 	
-	def PickWeapon(self, Weapon):
-		if self.Level >= Weapon.LevelRequired and self.Profession == Weapon.ProfessionRequired:
-			if Weapon.Attack - self.Weapon.Attack > 0:
-				self.AttributeIncrease(0, Weapon.Attack - self.Weapon.Attack, 0, 0, 0, 0)
-			else:
-				self.AttributeDecrease(0, self.Weapon.Attack - Weapon.Attack, 0, 0, 0)
+	def pick_weapon(self, weapon: Weapon) -> None:
+		REQ_LEVEL_TEXT = (f'You do not have Required Level: {weapon.level_required}')
+		REQ_PROF_TEXT = (f'You do not have Required Profession: {weapon.profession_required}')
 
-			if Weapon.Agility - self.Weapon.Agility > 0:
-				self.AttributeIncrease(0, 0, Weapon.Agility - self.Weapon.Agility, 0, 0, 0)
+		if self.level >= weapon.level_required and self.profession == weapon.profession_required:
+			if weapon.attack - self.weapon.attack > 0:
+				self.attribute_increase(0, weapon.attack - self.weapon.attack, 0, 0, 0, 0)
 			else:
-				self.AttributeDecrease(0, 0, self.Weapon.Agility - Weapon.Agility, 0, 0)
+				self.attribute_decrease(0, self.weapon.attack - weapon.attack, 0, 0, 0)
+
+			if weapon.agility - self.weapon.agility > 0:
+				self.attribute_increase(0, 0, weapon.agility - self.weapon.agility, 0, 0, 0)
+			else:
+				self.attribute_decrease(0, 0, self.weapon.agility - weapon.agility, 0, 0)
 		
-			if Weapon.Intelligence - self.Weapon.Intelligence > 0:
-				self.AttributeIncrease(0, 0, 0, 0, Weapon.Intelligence - self.Weapon.Intelligence, 0)
+			if weapon.intelligence - self.weapon.intelligence > 0:
+				self.attribute_increase(0, 0, 0, 0, weapon.intelligence - self.weapon.intelligence,0)
 			else:
-				self.AttributeDecrease(0, 0, 0, 0, self.Weapon.Intelligence - Weapon.Intelligence)
-			self.Weapon = Weapon
-			self.ShowStatus()
-			self.CurrentRoom.Items.remove(self.CurrentRoom.Interior[self.RoomPositionY][self.RoomPositionX])  # Removing Picked Weapon from Current Room Attribute
-			self.CurrentRoom.Interior[self.RoomPositionY][self.RoomPositionX] = 0  # Removing Picked Weapon from Map and Current Room Interior
-		else:
-			if self.Level < Weapon.LevelRequired:
-				print(Fore.RED + f'You do not have Required Level: {Weapon.LevelRequired}', Style.RESET_ALL)
-			else:
-				print(Fore.RED + f'You do not have Required Profession: {Weapon.ProfessionRequired}', Style.RESET_ALL)
-	
-	def PickArmor(self, Armor):
-		if self.Level >= Armor.LevelRequired and self.Profession == Armor.ProfessionRequired:
-			if Armor.Agility - self.Armor.Agility > 0:
-				self.AttributeIncrease(0, 0, Armor.Agility - self.Armor.Agility, 0, 0, 0)
-			else:
-				self.AttributeDecrease(0, 0, self.Armor.Agility - Armor.Agility, 0, 0)
-			
-			if Armor.Defense - self.Armor.Defense > 0:
-				self.AttributeIncrease(0, 0, 0, Armor.Defense - self.Armor.Defense, 0, 0)
-			else:
-				self.AttributeDecrease(0, 0, 0, Armor.Defense - self.Armor.Defense, 0)
-		
-			if Armor.Intelligence - self.Armor.Intelligence > 0:
-				self.AttributeIncrease(0, 0, 0, 0, Armor.Intelligence - self.Armor.Intelligence, 0)
-			else:
-				self.AttributeDecrease(0, 0, 0, 0, self.Armor.Intelligence - Armor.Intelligence)
-			self.Armor = Armor
-			self.ShowStatus()
-			self.CurrentRoom.Items.remove(self.CurrentRoom.Interior[self.RoomPositionY][self.RoomPositionX])  # Removing Picked Armor from Current Room Attribute
-			self.CurrentRoom.Interior[self.RoomPositionY][self.RoomPositionX] = 0  # Removing Picked Weapon from Map and Current Room Interior
-		else:
-			if self.Level < Armor.LevelRequired:
-				print(Fore.RED + f'You do not have Required Level: {Armor.LevelRequired}', Style.RESET_ALL)
-			else:
-				print(Fore.RED + f'You do not have Required Profession: {Armor.ProfessionRequired}', Style.RESET_ALL)
+				self.attribute_decrease(0, 0, 0, 0, self.weapon.intelligence - weapon.intelligence)
 
-	def Battle(self, enemy):
+			self.weapon = weapon
+			self.show_status()
+ 			# Removing Picked Weapon from Current Room Attribute
+			self.current_room.items.remove(
+				self.current_room.interior[self.room_position_y][self.room_position_x])
+  			# Removing Picked Weapon from Map and Current Room Interior
+			self.current_room.interior[self.room_position_y][self.room_position_x] = 0 
+		else:
+			if self.level < weapon.level_required:
+				print(Fore.RED + REQ_LEVEL_TEXT, Style.RESET_ALL)
+			else:
+				print(Fore.RED + REQ_PROF_TEXT, Style.RESET_ALL)
+	
+	def pick_armor(self, armor: Armor) -> None:
+		REQ_LEVEL_TEXT = (f'You do not have Required Level: {armor.level_required}')
+		REQ_PROF_TEXT = (f'You do not have Required Profession: {armor.profession_required}')
+
+		if self.level >= armor.level_required and self.profession == armor.profession_required:
+			if armor.agility - self.armor.agility > 0:
+				self.attribute_increase(0, 0, armor.agility - self.armor.agility, 0, 0, 0)
+			else:
+				self.attribute_decrease(0, 0, self.armor.agility - armor.agility, 0, 0)
+			
+			if armor.defense - self.armor.defense > 0:
+				self.attribute_increase(0, 0, 0, armor.defense - self.armor.defense, 0, 0)
+			else:
+				self.attribute_decrease(0, 0, 0, armor.defense - self.armor.defense, 0)
+		
+			if armor.intelligence - self.armor.intelligence > 0:
+				self.attribute_increase(0, 0, 0, 0, armor.intelligence - self.armor.intelligence, 0)
+			else:
+				self.attribute_decrease(0, 0, 0, 0, self.armor.intelligence - armor.intelligence)
+			self.armor = armor
+			self.show_status()
+ 			# Removing Picked Armor from Current Room Attribute
+			self.current_room.items.remove(
+				self.current_room.interior[self.room_position_y][self.room_position_x])
+ 			# Removing Picked Weapon from Map and Current Room Interior
+			self.current_room.interior[self.room_position_y][self.room_position_x] = 0  
+		else:
+			if self.level < armor.level_required:
+				print(Fore.RED + REQ_LEVEL_TEXT, Style.RESET_ALL)
+			else:
+				print(Fore.RED + REQ_PROF_TEXT, Style.RESET_ALL)
+
+	def battle(self, enemy: Monster) -> None:
+		MUSIC_VOLUME = 0.7
+		NEXT_ATTACK_TIME = 0.5
+		attack_res = 0
 		file3 = open('Data/BattleMusic.txt', "r") 
 		BattleMusic = random.choices(file3.read().splitlines(), k = 1)
 		file3.close()
 		mixer.music.stop()
 		mixer.music.load('Music/Battle/' + BattleMusic[0])
-		mixer.music.set_volume(0.7)
+		mixer.music.set_volume(MUSIC_VOLUME)
 		mixer.music.play()
 		while True:
-			if random.randint(0, 1) == 1:  # Randomly Choosing Whose Turn to Attack is it
-				print(Fore.YELLOW + 'It is Your Turn to Attack, Enter "A" to Attack', Style.RESET_ALL)
+			if attack_res % 2 == 0:
+				print(Fore.YELLOW + 'It is Your Turn to Attack, Enter "A" to Attack', 
+					Style.RESET_ALL)
 				res = input()
 				while res != "A":
 					print(Fore.RED + 'Wrong Input, Enter "A" to Attack', Style.RESET_ALL)
 					res = input()
 				try:
-					self.DealDamage(enemy)
-				except ValueError:  # Exeption is Being Risen When Monster Dies // See Enemy.py
-					self.CurrentRoom.Monsters.remove(self.CurrentRoom.Interior[self.RoomPositionY][self.RoomPositionX])  # Removing Death Monster from Current Room Attribute
-					self.CurrentRoom.Interior[self.RoomPositionY][self.RoomPositionX] = 0  # Removing Death Monster from Map and Current Room Interior
-					self.CurrentRoom.ShowInterior(self.RoomPositionX, self.RoomPositionY)
+					self.deal_damage(enemy)
+				except MonsterDeath:  
+ 					# Removing Death Monster from Current Room Attribute
+					self.current_room.monsters.remove(
+						self.current_room.interior[self.room_position_y][self.room_position_x])
+				 	# Removing Death Monster from Map and Current Room Interior
+					self.current_room.interior[self.room_position_y][self.room_position_x] = 0
+					self.current_room.show_interior(self.room_position_x, self.room_position_y)
 					break
+				attack_res += 1
 			else:
-				print(Fore.YELLOW + f'It is {enemy.Name} Turn to Attack', Style.RESET_ALL)
-				time.sleep(0.5)
-				enemy.DealDamage(self)	
+				print(Fore.YELLOW + f'It is {enemy.name} Turn to Attack', Style.RESET_ALL)
+				time.sleep(NEXT_ATTACK_TIME)
+				enemy.deal_damage(self)	
+				attack_res += 1
 		mixer.music.stop()
-		mixer.music.load(self.CurrentRoom.Music)
-		mixer.music.set_volume(0.7)
+		mixer.music.load(self.current_room.music)
+		mixer.music.set_volume(MUSIC_VOLUME)
 		mixer.music.play()	
 
-	def Move(self, direction, Map):
+	def move(self, direction: str, Map: list, admin: str = "NO_RIGHTS") -> None:
+		NOT_CLEARED_TEXT = 'You Can not Move to The Next Room Until You Do not Clear Current Room'
+		NEW_ROOM_TEXT = 'You Entered New Room'
+		THERE_WALL_TEXT = 'You Can not Move This Way, There is a Wall'
+		WRONG_INPUT_TEXT = 'Wrong input, choose from (N)orth, (S)outh, (E)ast, (W)est'
+		MUSIC_VOLUME = 0.7
+		SLEEP_CONST_1 = 0.2
+		SLEEP_CONST_2 = 3
+
 		if direction == 'N':
-			self.PositionY += 1
-			if self.RoomPositionX == self.CurrentRoom.Size // 2 and self.RoomPositionY == 0:  # If Hero is Next to The Door Change The Room
-				if self.CurrentRoom.Monsters != []:
-					print(Fore.RED + 'You Can not Move to The Next Room Until You Do not Clear Current Room', Style.RESET_ALL)
-					self.PositionY -= 1
-				elif self.CurrentRoom.GlobalPositionY == 2:
-					print(Fore.GREEN + "YOU WON THE GAME", Style.RESET_ALL)
-					sys.exit()
+			self.position_y += 1
+ 			# If Hero is Next to The Door Change The Room
+			if self.room_position_x == self.current_room.size // 2 and self.room_position_y == 0: 
+				if self.current_room.monsters != [] and admin == "NO_RIGHTS":
+					self.position_y -= 1
+					raise CannotLeave(NOT_CLEARED_TEXT)
+				elif self.current_room.global_position_y == int(len(Map) ** (1/2)) // 2: 
+					self.win()
 				else:	
-					for Room in Map:
-						if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY - 1: 
-							self.CurrentRoom = Room
-							print(Fore.YELLOW + f'You Entered New Room', Style.RESET_ALL)
-							self.CurrentRoom.ShowDescription()
-							self.RoomPositionY = self.CurrentRoom.Size - 1
-							self.RoomPositionX = self.CurrentRoom.Size // 2
-							self.CurrentRoom.ShowInterior(self.RoomPositionX, self.RoomPositionY)
+					for room in Map:
+						if (self.current_room.global_position_x == room.global_position_x and 
+							self.current_room.global_position_y == room.global_position_y - 1): 
+							
+							self.current_room = room
+							print(Fore.YELLOW + NEW_ROOM_TEXT, Style.RESET_ALL)
+							self.current_room.show_description()
+							self.room_position_y = self.current_room.size - 1
+							self.room_position_x = self.current_room.size // 2
+							self.current_room.show_interior(
+								self.room_position_x, self.room_position_y)
 							mixer.music.stop()
-							mixer.music.load(self.CurrentRoom.Music)
-							mixer.music.set_volume(0.7)
+							mixer.music.load(self.current_room.music)
+							mixer.music.set_volume(MUSIC_VOLUME)
 							mixer.music.play()
 							break
 			else:
-				if self.RoomPositionY == 0:
-					print(Fore.RED + 'You Can not Move This Way, There is a Wall', Style.RESET_ALL)
-					self.PositionY -= 1
+				if self.room_position_y == 0:
+					self.position_y -= 1
+					raise CannotLeave(THERE_WALL_TEXT)
 				else:
-					self.RoomPositionY -= 1
+					self.room_position_y -= 1
 
 		elif direction == 'S':
-			self.PositionY -= 1
-			if self.RoomPositionX  == self.CurrentRoom.Size // 2 and self.RoomPositionY == self.CurrentRoom.Size - 1:  # If Hero is Next to The Door Change The Room
-				if self.CurrentRoom.Monsters != []:
-					print(Fore.RED + 'You Can not Move to The Next Room Until You Do not Clear Current Room', Style.RESET_ALL)
-					self.PositionY += 1
-				elif self.CurrentRoom.GlobalPositionY == -2:
-					print(Fore.GREEN + "YOU WON THE GAME", Style.RESET_ALL)
-					sys.exit()
+			self.position_y -= 1
+ 			# If Hero is Next to The Door Change The Room
+			if (self.room_position_x  == self.current_room.size // 2 and
+				self.room_position_y == self.current_room.size - 1): 
+				if self.current_room.monsters != [] and admin == "NO_RIGHTS":
+					self.position_y += 1
+					raise CannotLeave(NOT_CLEARED_TEXT)				
+				elif self.current_room.global_position_y == -(int(len(Map) ** (1/2)) // 2):
+					self.win()
 				else:
-					for Room in Map:
-						if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY + 1: 
-							self.CurrentRoom = Room
-							print(Fore.YELLOW + f'You Entered New Room', Style.RESET_ALL)
-							self.CurrentRoom.ShowDescription()
-							self.RoomPositionY = 0
-							self.RoomPositionX = self.CurrentRoom.Size // 2
-							self.CurrentRoom.ShowInterior(self.RoomPositionX, self.RoomPositionY)	
+					for room in Map:
+						if (self.current_room.global_position_x == room.global_position_x and 
+							self.current_room.global_position_y == room.global_position_y + 1): 
+							
+							self.current_room = room
+							print(Fore.YELLOW + NEW_ROOM_TEXT, Style.RESET_ALL)
+							self.current_room.show_description()
+							self.room_position_y = 0
+							self.room_position_x = self.current_room.size // 2
+							self.current_room.show_interior(
+								self.room_position_x, self.room_position_y)	
 							mixer.music.stop()
-							mixer.music.load(self.CurrentRoom.Music)
-							mixer.music.set_volume(0.7)
+							mixer.music.load(self.current_room.music)
+							mixer.music.set_volume(MUSIC_VOLUME)
 							mixer.music.play()
 							break
 			else:
-				if self.RoomPositionY == self.CurrentRoom.Size - 1:
-					print(Fore.RED + 'You Can not Move This Way, There is a Wall', Style.RESET_ALL)
-					self.PositionY += 1
+				if self.room_position_y == self.current_room.size - 1:
+					self.position_y += 1
+					raise CannotLeave(THERE_WALL_TEXT)
 				else:
-					self.RoomPositionY += 1
+					self.room_position_y += 1
 
 		elif direction == 'E':
-			self.PositionX += 1
-			if self.RoomPositionX == self.CurrentRoom.Size - 1 and self.RoomPositionY == self.CurrentRoom.Size // 2:  # If Hero is Next to The Door Change The Room
-				if self.CurrentRoom.Monsters != []:
-					print(Fore.RED + 'You Can not Move to The Next Room Until You Do not Clear Current Room', Style.RESET_ALL)
-					self.PositionX -= 1
-				elif self.CurrentRoom.GlobalPositionX == 2:
-					print(Fore.GREEN + "YOU WON THE GAME", Style.RESET_ALL)
-					sys.exit()
+			self.position_x += 1
+ 			# If Hero is Next to The Door Change The Room
+			if (self.room_position_x == self.current_room.size - 1 and 
+				self.room_position_y == self.current_room.size // 2): 
+				if self.current_room.monsters != [] and admin == "NO_RIGHTS":
+					self.position_x -= 1
+					raise CannotLeave(NOT_CLEARED_TEXT)
+				elif self.current_room.global_position_x == int(len(Map) ** (1/2)) // 2:
+					self.win()
 				else:
-					for Room in Map:
-						if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX - 1 and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY: 
-							self.CurrentRoom = Room
-							print(Fore.YELLOW + f'You Entered New Room', Style.RESET_ALL)
-							self.CurrentRoom.ShowDescription()
-							self.RoomPositionY = self.CurrentRoom.Size // 2
-							self.RoomPositionX = 0
-							self.CurrentRoom.ShowInterior(self.RoomPositionX, self.RoomPositionY)
+					for room in Map:
+						if (self.current_room.global_position_x == room.global_position_x - 1 and 
+							self.current_room.global_position_y == room.global_position_y): 
+							
+							self.current_room = room
+							print(Fore.YELLOW + NEW_ROOM_TEXT, Style.RESET_ALL)
+							self.current_room.show_description()
+							self.room_position_y = self.current_room.size // 2
+							self.room_position_x = 0
+							self.current_room.show_interior(
+								self.room_position_x, self.room_position_y)
 							mixer.music.stop()
-							mixer.music.load(self.CurrentRoom.Music)
-							mixer.music.set_volume(0.7)
+							mixer.music.load(self.current_room.music)
+							mixer.music.set_volume(MUSIC_VOLUME)
 							mixer.music.play()
 							break
 			else:
-				if self.RoomPositionX == self.CurrentRoom.Size - 1:
-					print(Fore.RED + 'You Can not Move This Way, There is a Wall', Style.RESET_ALL)
-					self.PositionX -= 1
+				if self.room_position_x == self.current_room.size - 1:
+					self.position_x -= 1
+					raise CannotLeave(THERE_WALL_TEXT)
 				else:
-					self.RoomPositionX += 1
+					self.room_position_x += 1
 
 		elif direction == 'W':
-			self.PositionX -= 1
-			if self.RoomPositionX == 0 and self.RoomPositionY == self.CurrentRoom.Size // 2:  # If Hero is Next to The Door Change The Room
-				if self.CurrentRoom.Monsters != []:
-					print(Fore.RED + 'You Can not Move to The Next Room Until You Do not Clear Current Room', Style.RESET_ALL)
-					self.PositionX += 1
-				elif self.CurrentRoom.GlobalPositionX == -2:
-					print(Fore.GREEN + "YOU WON THE GAME", Style.RESET_ALL)
-					sys.exit()
+			self.position_x -= 1
+ 			# If Hero is Next to The Door Change The Room
+			if self.room_position_x == 0 and self.room_position_y == self.current_room.size // 2: 
+				if self.current_room.monsters != [] and admin == "NO_RIGHTS":
+					self.position_x += 1
+					raise CannotLeave(NOT_CLEARED_TEXT)
+				elif self.current_room.global_position_x == -(int(len(Map) ** (1/2)) // 2):
+					self.win()
 				else:
-					for Room in Map:
-						if self.CurrentRoom.GlobalPositionX == Room.GlobalPositionX + 1 and self.CurrentRoom.GlobalPositionY == Room.GlobalPositionY: 
-							self.CurrentRoom = Room
-							print(Fore.YELLOW + f'You Entered New Room', Style.RESET_ALL)
-							self.CurrentRoom.ShowDescription()
-							self.RoomPositionY = self.CurrentRoom.Size // 2
-							self.RoomPositionX = self.CurrentRoom.Size - 1
-							self.CurrentRoom.ShowInterior(self.RoomPositionX, self.RoomPositionY)
+					for room in Map:
+						if (self.current_room.global_position_x == room.global_position_x + 1 and 
+							self.current_room.global_position_y == room.global_position_y): 
+							
+							self.current_room = room
+							print(Fore.YELLOW + NEW_ROOM_TEXT, Style.RESET_ALL)
+							self.current_room.show_description()
+							self.room_position_y = self.current_room.size // 2
+							self.room_position_x = self.current_room.size - 1
+							self.current_room.show_interior(
+								self.room_position_x, self.room_position_y)
 							mixer.music.stop()
-							mixer.music.load(self.CurrentRoom.Music)
-							mixer.music.set_volume(0.7)
+							mixer.music.load(self.current_room.music)
+							mixer.music.set_volume(MUSIC_VOLUME)
 							mixer.music.play()
 							break
 			else:
-				if self.RoomPositionX == 0:
-					print(Fore.RED + 'You Can not Move This Way, There is a Wall', Style.RESET_ALL)
-					self.PositionX += 1
+				if self.room_position_x == 0:
+					self.position_x += 1
+					raise CannotLeave(THERE_WALL_TEXT)
 				else:
-					self.RoomPositionX -= 1
+					self.room_position_x -= 1
 		else:
-			print(Fore.RED + 'Wrong input, choose from (N)orth, (S)outh, (E)ast, (W)est', Style.RESET_ALL)
-		
-		RoomCell =  self.CurrentRoom.Interior[self.RoomPositionY][self.RoomPositionX]  # Current Location in The Room
-
-		if isinstance(RoomCell, Monster):
-			print(Fore.YELLOW + f'You Were Attaked by {RoomCell.Name}\n', Style.RESET_ALL)
-			self.Battle(RoomCell)
-			 			
-		elif isinstance(RoomCell, Weapon):
-			print(Fore.YELLOW + f'You Found Weapon {RoomCell.Name}, To Pick It Enter "Pick", To Drop It Enter "Drop", To See Weapon Description Enter "Description"\n', Style.RESET_ALL)
-			res = input()
-			while res != 'Drop':
-				if res == 'Pick':
-					self.PickWeapon(RoomCell)
-					RoomCell = 0		
-					break
-				elif res == 'Description':
-					RoomCell.ShowStatus()
-				else:
-					print(Fore.RED + "Wrong Input, Try Again", Style.RESET_ALL)
-				res = input()
-			
-		elif isinstance(RoomCell, Armor):
-			print(Fore.YELLOW + f'You Found Armor {RoomCell.Name}, To Pick It Enter "Pick", To Drop It Enter "Drop", To See Armor Description Enter "Description"\n', Style.RESET_ALL)
-			res = input()
-			while res != 'Drop':
-				if res == 'Pick':
-					self.PickArmor(RoomCell)
-					RoomCell = 0		
-					break
-				elif res == 'Description':
-					RoomCell.ShowStatus()
-				else:
-					print(Fore.RED + "Wrong Input, Try Again", Style.RESET_ALL)
-				res = input()
-				
-	def CreateHero():
-		Mage = [50, 10, 3, 3, 12]
-		Archer = [70, 8, 12, 5, 3]
-		Knight = [100, 12, 5, 12, 1]
-
-		Name = input("Enter Your Name: ").strip()
+			print(Fore.RED + WRONG_INPUT_TEXT, Style.RESET_ALL)
 	
-		Age = input("Enter Your Age: ").strip()
-		while Age.isdigit() != True:
-			print(Fore.RED + "Wrong Input, Try Again", Style.RESET_ALL)
-			Age = input("Enter Your Age: ").strip()
+	@classmethod	
+	def create_hero(self, name: str, gender: str, profession: str, age: int  ) -> "Hero":
+		"""Used for creating Hero class character at the start of the game"""
+		# HEALTH, ATTACK, AGILITY, DEFENSE, INTELLIGENCE
+		MAGE = [50, 10, 3, 3, 12]
+		ARCHER = [70, 8, 12, 5, 3]
+		KNIGHT = [100, 12, 5, 12, 1]
 
-		Gender = input("Enter Your Gender[(M)ale/(F)emale]: ").strip()
-		while Gender != 'M' and Gender != 'F':
-			print(Fore.RED + "Wrong Input, Try Again", Style.RESET_ALL)
-			Gender = input("Enter Your Gender[(M)ale/(F)emale]: ").strip()
-		if Gender == 'M':
-			Gender = 'Male'
-		else:
-			Gender = 'Female'
+		if profession == 'M':
+			MC = Hero(
+					 name, age, gender, 'Mage', 
+					 MAGE[0], MAGE[1], MAGE[2], 
+					 MAGE[3], MAGE[4], arms, shirt)
+		elif profession == 'K':
+ 			MC = Hero(
+					 name, age, gender, 'Knight', 
+					 KNIGHT[0], KNIGHT[1], KNIGHT[2], 
+					 KNIGHT[3], KNIGHT[4], arms, shirt)
+		elif profession == 'A':
+			MC = Hero(name, age, gender, 'Archer', 
+					 ARCHER[0], ARCHER[1], ARCHER[2], 
+					 ARCHER[3], ARCHER[4], arms, shirt)
 
-		Profession = input("Choose Character Profession[(M)age, (K)night, (A)rcher]: ").strip()
-		while Profession != 'M' and Profession != 'K' and Profession != 'A':
-			print(Fore.RED + "Wrong Input, Try Again", Style.RESET_ALL)
-			Profession = input("Choose Character Profession[(M)age, (K)night, (A)rcher]: ").strip()
-
-		if Profession == 'M':
-			MC = Hero(Name, Age, Gender, 'Mage', Mage[0], Mage[1], Mage[2], Mage[3], Mage[4], Arms, Shirt)
-		elif Profession == 'K':
- 			MC = Hero(Name, Age, Gender, 'Knight', Knight[0], Knight[1], Knight[2], Knight[3], Knight[4], Arms, Shirt)
-		elif Profession == 'A':
-			MC = Hero(Name, Age, Gender, 'Archer', Archer[0], Archer[1], Archer[2], Archer[3], Archer[4], Arms, Shirt)
-		else:
-			raise ValueError
-
-		MC.ShowStatus()
 		return MC
+
 

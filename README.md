@@ -12,7 +12,7 @@
     other. Hero spawns in the center of the map and have to clear each room to enter   
     next one. After clearing required rooms and leaving map the Player wins the game.  
 
-## Running the program
+## Running the program(For Linux)
 * ### First Download python3.8
     1. Open Terminal and use $ sudo apt-get update
     2. $ sudo apt-get install python3.8
@@ -27,10 +27,13 @@
 ## Files and repositories containing source code
 *   /src - Repository that contains the files with code
 
-*   main.py - file that contains code which runs src/Play.py
+*   main.py - file that runs src/Play.py
 
-*   src/Play.py - file that contains code which is responsible for  
-    the game interface, handling users input and whole game loop
+*   src/Play.py - file that is responsible for the game interface,   
+    handling users input and whole game loop
+
+*   src/Command.py - file that contains implementations of Command and  
+    Chain of Responsibility design patterns.
 
 *   src/Enemy.py - file that contains implementation of the Monster class
 
@@ -47,7 +50,7 @@
     music names which are used during the fights 
 
 *   /UML_Diagrams - Repository that contains program all UML      
-    diagrams in pdf and jpg formats
+    diagrams in jpg format
 
 *   /Music - Repository that contains the whole .mp3 music files
 

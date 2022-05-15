@@ -8,11 +8,19 @@ from abc import ABC, abstractmethod
 
 
 class QuitGame(Exception):
-	pass
+	def __init__(self, message = "In the End, It is all you can, coward...") -> None:
+		self.message = message
+
+	def __str__(self) -> str:
+		return 'User used Quit command'
 
 
 class EmptyHistory(Exception):
-	pass
+	def __init__(self, message = 'Command History is Empty') -> None:
+		self.message = message
+
+	def __str__(self) -> str:
+		return 'User tried to get item from empty list in Invoker class'
 
 
 class Handler(ABC):
@@ -24,25 +32,26 @@ class Handler(ABC):
 	def handle(self, request):
 		pass
 
+
 class AbstractHandler(Handler):
-	def __init__(self, Map: list, admin: str, MC: Hero):
+	def __init__(self, Map: list, admin: str, MC: Hero) -> None:
 		self.MC = MC
 		self.Map = Map
 		self.admin = admin
 		self.next_modifier = None
 
-	def add_modifier(self, modifier):
+	def add_modifier(self, modifier) -> None:
 		if self.next_modifier:
 			self.next_modifier.add_modifier(modifier)
 		else:
 			self.next_modifier = modifier
 	
-	def handle(self, request):
+	def handle(self, request) -> None:
 		if self.next_modifier:
 			self.next_modifier.handle(request)
 
 class MoveInChain(AbstractHandler):
-	def handle(self, request): 
+	def handle(self, request) -> None: 
 		if (request == "N" or request == "S" or
 			request == "E" or request == "W"):
 			self.MC.move(request, self.Map, self.admin)
@@ -52,7 +61,7 @@ class MoveInChain(AbstractHandler):
 
 
 class CheckCell(AbstractHandler):
-	def handle(self, request):
+	def handle(self, request) -> None:
 		if isinstance(request, Monster):
 			super().add_modifier(FoundMonster(self.Map, self.admin, self.MC))	
 		elif isinstance(request, Weapon):
@@ -63,7 +72,7 @@ class CheckCell(AbstractHandler):
 	
 	
 class FoundWeapon(AbstractHandler):
-	def handle(self, request):
+	def handle(self, request) -> None:
 		WEAPON_TEXT = (' To Pick It Enter "Pick", To Drop It Enter "Drop",'
 					   ' To See Weapon Description Enter "Description"\n')
 		print(Fore.YELLOW + f'You Found Weapon {request.name},' + WEAPON_TEXT, Style.RESET_ALL)
@@ -84,7 +93,7 @@ class FoundWeapon(AbstractHandler):
 
 	
 class FoundArmor(AbstractHandler):
-	def handle(self, request):
+	def handle(self, request) -> None:
 		ARMOR_TEXT =  (' To Pick It Enter "Pick", To Drop It Enter "Drop",'
 					   ' To See Armor Description Enter "Description"\n')
 		print(Fore.YELLOW + f'You Found Armor {request.name},' + ARMOR_TEXT, Style.RESET_ALL)
@@ -105,7 +114,7 @@ class FoundArmor(AbstractHandler):
 
 
 class FoundMonster(AbstractHandler):
-	def handle(self, request):
+	def handle(self, request) -> None:
 		if isinstance(request, Monster):
 			print(Fore.YELLOW + f'You Were Attaked by {request.name}\n', Style.RESET_ALL)
 			self.MC.battle(request)
@@ -119,7 +128,7 @@ class Command(ABC):
 
 
 class Move(Command):
-	def __init__(self, direction: str, MC: Hero, Map: list, admin: str = "NO_RIGHTS"):
+	def __init__(self, direction: str, MC: Hero, Map: list, admin: str = "NO_RIGHTS") -> None:
 		self.direction = direction
 		self.MC = MC
 		self.Map = Map
@@ -134,18 +143,18 @@ class Move(Command):
 		elif self.direction == 'W':
 			self.reverse = 'E'
  
-	def execute(self):
+	def execute(self) -> None:
 		chain_creator = AbstractHandler(self.Map, self.admin, self.MC) 	
 		chain_creator.add_modifier(MoveInChain(self.Map, self.admin, self.MC))
 		chain_creator.add_modifier(CheckCell(self.Map, self.admin, self.MC))
 		chain_creator.handle(self.direction)
 		
-	def undo(self):
+	def undo(self) -> None:
 		self.MC.move(self.reverse, self.Map, "ADMIN_RIGHTS")
 
 
 class Help(Command):
-	def __init__(self):
+	def __init__(self) -> None:
 		self.text_1 = ('\nMove: Enter "N", "W", "E", "S" Keys to Move\n'
 					   'ShowStatus: Enter "Status" to See Your Current Status\n'
 					   'RoomDescription: Enter "R" to See Current Room Description\n'
@@ -167,15 +176,15 @@ class Help(Command):
 
 
 class ShowStatus(Command):
-	def __init__(self, MC: Hero):
+	def __init__(self, MC: Hero) -> None:
 		self.MC = MC
 	
-	def execute(self):
+	def execute(self) -> None:
 		self.MC.show_status()
 
 	
 class ShowRoom(Command):
-	def __init__(self, MC: Hero):
+	def __init__(self, MC: Hero) -> None:
 		self.MC = MC
 	
 	def execute(self) -> None:
@@ -186,7 +195,7 @@ class ShowRoom(Command):
 	
 
 class ShowMap(Command):
-	def __init__(self, MC: Hero, Map: list):
+	def __init__(self, MC: Hero, Map: list) -> None:
 		self.MC = MC
 		self.Map = Map
 	
@@ -198,7 +207,7 @@ class ShowMap(Command):
 
 	
 class ShowWeapon(Command):
-	def __init__(self, MC: Hero):
+	def __init__(self, MC: Hero) -> None:
 		self.MC = MC
 	
 	def execute(self) -> None:
@@ -207,7 +216,7 @@ class ShowWeapon(Command):
 
 
 class ShowArmor(Command):
-	def __init__(self, MC: Hero):
+	def __init__(self, MC: Hero) -> None:
 		self.MC = MC
 	
 	def execute(self) -> None:
@@ -238,7 +247,7 @@ class Wrong(Command):
 class Invoker:
 	_current_command = None
 
-	def __init__(self):
+	def __init__(self) -> None:
 		self._history = []
 
 	def add_command(self, command: Command) -> None:
@@ -264,7 +273,7 @@ class Invoker:
 		res_com.undo()
 	
 class CommandExecuter:
-	def __init__(self, MC: Hero, Map: list):
+	def __init__(self, MC: Hero, Map: list) -> None:
 		self.MC = MC
 		self.Map = Map
 		self.invoker = Invoker()
@@ -278,8 +287,10 @@ class CommandExecuter:
 				self.invoker.set_command(Move(insert, self.MC, self.Map))
 				self.invoker.perform_command()
 			except CannotLeave as error:
-				print(Fore.RED + "", end = "")
-				print(error, Style.RESET_ALL)
+				if error.args[0] == 1:
+					print(Fore.RED + error.message_1, Style.RESET_ALL)
+				else:
+					print(Fore.RED + error.message_2, Style.RESET_ALL)
 				self.invoker.remove_command()
 		elif insert == 'Status':
 			self.invoker.set_command(ShowStatus(self.MC))
@@ -308,8 +319,8 @@ class CommandExecuter:
 		elif insert == "U":
 			try:
 				self.invoker.undo_command()
-			except EmptyHistory:
-				print(Fore.RED + 'Command History is Empty', Style.RESET_ALL)
+			except EmptyHistory as error:
+				print(Fore.RED + error.message, Style.RESET_ALL)
 		elif insert == "":
 			pass	
 		else:

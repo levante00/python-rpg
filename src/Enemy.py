@@ -2,11 +2,22 @@ import random
 from colorama import Fore, Back, Style
 
 class MonsterDeath(Exception):
-	pass
+	def __init__(self, name: str = "None", exp: int = 0) -> None:
+		self.name = name
+		self.exp = exp
+		self.message = f'{self.name} Died, You get {self.exp} Experience'
+
+	def __str__(self) -> str:
+		return 'Heores dealed damage exceeded Monsters health'
+
+
 
 class Monster():
 	"""Class used for creating Monsters to locate in Dangeon"""
-	def __init__(self, name: str, description: str, level: int, health: int, attack: int, agility: int, defense: int):
+	def __init__(
+		self, name: str, description: str, level: int, 
+		health: int, attack: int, agility: int, defense: int) -> None:
+
 		self.name = name
 		self.description = description
 		self.level = level
@@ -39,9 +50,8 @@ class Monster():
 		self.health -= damage
 		gain_exp = 5 * 2**(self.level)  # Its the Formula of ExpLimit Series
 		if self.health <= 0:
-			print(Fore.YELLOW + f'{self.name} Died, You get {gain_exp} Experience', Style.RESET_ALL)
 			enemy.attribute_increase(0, 0, 0, 0, 0, gain_exp)
-			raise MonsterDeath
+			raise MonsterDeath(self.name, gain_exp)
 
 	def deal_damage(self, enemy: "Hero") -> None:
 		"""Used to lower Heroes HP based on Monster Attack and Hero Defence.

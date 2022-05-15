@@ -67,4 +67,4 @@
     at the start of the game
 
 ## UML Diagram
-![Alt text]( UML_Diagrams/Class_Diagram.jpg "Optional title")
+![Alt text]( UML_Diagrams/Class_Diagram.jpg "Class Diagram")

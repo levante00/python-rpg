@@ -10,7 +10,7 @@ import time
 class Room:	
 	def __init__(self, name: str, global_position_x: int,
 			 global_position_y: int, music: str, interior: list = [],
-			 monsters: list = [], items: list = [], size: int = 9):
+			 monsters: list = [], items: list = [], size: int = 9) -> None:
 		self.name = name
 		self.global_position_x = global_position_x  # X Coordinate Relative to Other Rooms
 		self.global_position_y = global_position_y  # Y Coordintae Relative to Other Rooms

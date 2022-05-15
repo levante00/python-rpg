@@ -3,7 +3,7 @@ from colorama import Fore, Back, Style
 
 class Item:
 	"""The Game whole items class"""
-	def __init__(self, name: str, description: str):
+	def __init__(self, name: str, description: str) -> None:
 		self.name = name
 		self.description = description
 
@@ -22,7 +22,7 @@ class Armor(Item):
 	def __init__(
 			self, name: str, description: str, 
 			profession_required: str, level_required: int, 
-			agility: int, defense: int, intelligence: int):
+			agility: int, defense: int, intelligence: int) -> None:
 		super().__init__(name, description)
 		self.profession_required = profession_required
 		self.level_required = level_required
@@ -42,7 +42,7 @@ class Weapon(Item):
 	"""SubClass of Items but with special attributes for attack"""
 	def __init__(
 			self, name: str, description: str, profession_required: str, 
-			level_required: int, attack: int, agility: int, intelligence: int):
+			level_required: int, attack: int, agility: int, intelligence: int) -> None:
 		super().__init__(name, description)
 		self.profession_required = profession_required
 		self.level_required = level_required

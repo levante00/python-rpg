@@ -1,3 +1,4 @@
+from __future__ import annotations
 import random
 import sys
 from src.Items import *
@@ -12,9 +13,17 @@ import time
 
 
 class CannotLeave(Exception):
-	def __init__(self, message):
-		self.text = message
+	def __init__(
+			self, 
+			index,
+			message_1 = "You Can not Move to The Next Room Until You Do not Clear Current Room",
+			message_2 = 'You Can not Move This Way, There is a Wall') -> None:
+		self.message_1 = message_1
+		self.message_2 = message_2
+		self.index = index	
 
+	def __str__(self) -> str:
+		return "User used move command which caused leaving Map or Room arrays"
 
 class Hero:
 	"""Class of the game characters"""
@@ -25,7 +34,7 @@ class Hero:
 			health: int, attack: int, agility: int, defense: int, intelligence: int, 
 			weapon: Weapon, armor: Armor, current_room: Room = room1, 
 			level: int = 1, experience: int = 0, position_x: int = 0, 
-			position_y: int = 0, room_position_x: int = 4, room_position_y: int = 4):
+			position_y: int = 0, room_position_x: int = 4, room_position_y: int = 4) -> None:
 		self.name = name
 		self.age = age  
 		self.gender = gender
@@ -229,7 +238,8 @@ class Hero:
 					res = input()
 				try:
 					self.deal_damage(enemy)
-				except MonsterDeath:  
+				except MonsterDeath as error:
+					print(Fore.YELLOW + error.message, Style.RESET_ALL)
  					# Removing Death Monster from Current Room Attribute
 					self.current_room.monsters.remove(
 						self.current_room.interior[self.room_position_y][self.room_position_x])
@@ -249,9 +259,7 @@ class Hero:
 		mixer.music.play()	
 
 	def move(self, direction: str, Map: list, admin: str = "NO_RIGHTS") -> None:
-		NOT_CLEARED_TEXT = 'You Can not Move to The Next Room Until You Do not Clear Current Room'
 		NEW_ROOM_TEXT = 'You Entered New Room'
-		THERE_WALL_TEXT = 'You Can not Move This Way, There is a Wall'
 		WRONG_INPUT_TEXT = 'Wrong input, choose from (N)orth, (S)outh, (E)ast, (W)est'
 		MUSIC_VOLUME = 0.7
 		SLEEP_CONST_1 = 0.2
@@ -263,7 +271,7 @@ class Hero:
 			if self.room_position_x == self.current_room.size // 2 and self.room_position_y == 0: 
 				if self.current_room.monsters != [] and admin == "NO_RIGHTS":
 					self.position_y -= 1
-					raise CannotLeave(NOT_CLEARED_TEXT)
+					raise CannotLeave(1)
 				elif self.current_room.global_position_y == int(len(Map) ** (1/2)) // 2: 
 					self.win()
 				else:	
@@ -286,7 +294,7 @@ class Hero:
 			else:
 				if self.room_position_y == 0:
 					self.position_y -= 1
-					raise CannotLeave(THERE_WALL_TEXT)
+					raise CannotLeave(2)
 				else:
 					self.room_position_y -= 1
 
@@ -297,7 +305,7 @@ class Hero:
 				self.room_position_y == self.current_room.size - 1): 
 				if self.current_room.monsters != [] and admin == "NO_RIGHTS":
 					self.position_y += 1
-					raise CannotLeave(NOT_CLEARED_TEXT)				
+					raise CannotLeave(1)				
 				elif self.current_room.global_position_y == -(int(len(Map) ** (1/2)) // 2):
 					self.win()
 				else:
@@ -320,7 +328,7 @@ class Hero:
 			else:
 				if self.room_position_y == self.current_room.size - 1:
 					self.position_y += 1
-					raise CannotLeave(THERE_WALL_TEXT)
+					raise CannotLeave(2)
 				else:
 					self.room_position_y += 1
 
@@ -331,7 +339,7 @@ class Hero:
 				self.room_position_y == self.current_room.size // 2): 
 				if self.current_room.monsters != [] and admin == "NO_RIGHTS":
 					self.position_x -= 1
-					raise CannotLeave(NOT_CLEARED_TEXT)
+					raise CannotLeave(1)
 				elif self.current_room.global_position_x == int(len(Map) ** (1/2)) // 2:
 					self.win()
 				else:
@@ -354,7 +362,7 @@ class Hero:
 			else:
 				if self.room_position_x == self.current_room.size - 1:
 					self.position_x -= 1
-					raise CannotLeave(THERE_WALL_TEXT)
+					raise CannotLeave(2)
 				else:
 					self.room_position_x += 1
 
@@ -364,7 +372,7 @@ class Hero:
 			if self.room_position_x == 0 and self.room_position_y == self.current_room.size // 2: 
 				if self.current_room.monsters != [] and admin == "NO_RIGHTS":
 					self.position_x += 1
-					raise CannotLeave(NOT_CLEARED_TEXT)
+					raise CannotLeave(1)
 				elif self.current_room.global_position_x == -(int(len(Map) ** (1/2)) // 2):
 					self.win()
 				else:
@@ -387,14 +395,14 @@ class Hero:
 			else:
 				if self.room_position_x == 0:
 					self.position_x += 1
-					raise CannotLeave(THERE_WALL_TEXT)
+					raise CannotLeave(2)
 				else:
 					self.room_position_x -= 1
 		else:
 			print(Fore.RED + WRONG_INPUT_TEXT, Style.RESET_ALL)
 	
 	@classmethod	
-	def create_hero(self, name: str, gender: str, profession: str, age: int  ) -> "Hero":
+	def create_hero(self, name: str, gender: str, profession: str, age: int  ) -> Hero:
 		"""Used for creating Hero class character at the start of the game"""
 		# HEALTH, ATTACK, AGILITY, DEFENSE, INTELLIGENCE
 		MAGE = [50, 10, 3, 3, 12]

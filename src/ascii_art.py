@@ -5,7 +5,7 @@ import os
 class AsciiArt:
 	
 	@staticmethod
-	def win_print():
+	def win_print() -> None:
 		print(Fore.GREEN + '\033[1m' + """ 
  
 
@@ -20,7 +20,7 @@ class AsciiArt:
 					""".center(os.get_terminal_size().columns), Style.RESET_ALL)
 
 	@staticmethod
-	def death_print():
+	def death_print() -> None:
 		print(Fore.RED + '\033[1m' + """ 
 
 	

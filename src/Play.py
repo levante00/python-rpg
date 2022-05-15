@@ -10,7 +10,7 @@ from colorama import Fore, Back, Style
 
 
 class StartGame:
-	def __init__(self):
+	def __init__(self) -> None:
 		mixer.init()
 		self.start_screen()
 		self.prepare_screen()
@@ -117,8 +117,9 @@ class StartGame:
 			while True:
 				insert = input()
 				self.receiver.check_command(insert)
-		except Commands.QuitGame:
-			pass
+		except Commands.QuitGame as error:
+			print(Fore.RED + error.message, Style.RESET_ALL)
+			
 
 if __name__ == "__main__":
 	StartGame()
